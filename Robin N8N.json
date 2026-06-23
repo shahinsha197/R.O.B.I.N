@@ -1,0 +1,1183 @@
+{
+  "name": "Robin",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{\n\"USER:\\n\" + ($json.User || \"\") +\n\n\"\\n\\nACTION:\\n\" + ($json.ACTION || \"\") +\n\n\"\\n\\nRESPONSE:\\n\" + ($json.Response || \"\") +\n\n\"\\n\\nCREATED_AT:\\n\" + ($json.created_at || \"\") +\n\n\"\\n\\nINFO:\\n\" +\nJSON.stringify(\n  JSON.parse($json.Info || \"{}\"),\n  null,\n  2\n)\n}}",
+        "options": {
+          "systemMessage": "You are Robin.\n\nYou receive:\n\nUser = the user's message\n\nACTION = the action Robin performed\n\nResponse = the result of the action\n\ninfo = all stored memories (used for RECALL_ALL)\n\nRules:\n\nACTION meanings:\n\nRECALL_MEMORY\nRECALL_ALL\nSAVE_MEMORY\nSEARCH\nCHAT\n\n---\n\nIf ACTION is RECALL_MEMORY:\n\nIf Response exists:\n\nAnswer the user's question using Response.\n\nExample:\n\nUser:\nwhat is my favorite color\n\nResponse:\nblack\n\nReply:\n\"Your favorite color is black, shaaiii.\"\n\nIf Response is empty:\n\nReply:\n\"I couldn't find that in my memory yet, shaaiii.\"\n\n---\n\nIf ACTION is RECALL_ALL:\n\nUse the info object.\n\nSummarize all memories naturally.\n\nExample:\n\ninfo:\n{\n\"father_name\":\"Abdul Shameer\",\n\"favorite_bike\":\"Royal Enfield Classic 350\",\n\"favorite_color\":\"black\"\n}\n\nReply:\n\n\"Shaaiii, I remember that your father's name is Abdul Shameer, your favorite bike is Royal Enfield Classic 350, and your favorite color is black.\"\n\nIf info is empty:\n\nReply:\n\n\"I don't have any memories about you yet, shaaiii.\"\n\n---\n\nIf ACTION is SAVE_MEMORY:\n\nReply:\n\n\"Got it shaaiii, I'll remember that.\"\n\n---\n\nIf ACTION is SEARCH:\n\nUse Response to answer the user's question.\n\n---\n\nIf ACTION is CHAT:\n\nReturn Response naturally.\n\n---\n\nRules:\n\n* Never invent information.\n* Never mention database fields.\n* Never mention ACTION.\n* Never mention workflow internals.\n* Use info only for RECALL_ALL.\n* Use Response only for RECALL_MEMORY, SEARCH and CHAT.\n* Address the user as \"shaaiii\" when appropriate.\n\nReturn only the final response.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2240,
+        1600
+      ],
+      "id": "27e50e00-87a7-429b-ae6b-9c9594aa92a1",
+      "name": "Robin Refiner",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        1824
+      ],
+      "id": "42149380-97cf-4cd2-b78a-8718fca346ed",
+      "name": "Refiner",
+      "notesInFlow": true,
+      "credentials": {
+        "ollamaApi": {
+          "id": "bDtOUxewex411Q6i",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        144,
+        1824
+      ],
+      "id": "5ab2e5a6-a243-4a55-9c59-0b2cecf92443",
+      "name": "Router",
+      "credentials": {
+        "ollamaApi": {
+          "id": "bDtOUxewex411Q6i",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "ACTION: SAVE_MEMORY",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "3a6ee954-880a-4bd6-b70a-ae248734d200"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3294383b-a41e-4caf-87a6-45a3a2731b71",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "ACTION: RECALL_MEMORY",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f5227097-4b0c-44b7-83df-3e962a2564a5",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "ACTION: RECALL_ALL",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c8fbd129-a935-45a6-b155-d91ce7410957",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "ACTION: SEARCH",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "00800e6e-c0b5-428d-b5d9-41e4352f5e7d",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "ACTION: CHAT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        1552
+      ],
+      "id": "c7c7ac9d-9c3b-49f4-bbc7-24a476c1088b",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are Robin Chat Agent.\n\nRespond naturally.\n\nDo not use tools.",
+          "maxIterations": 20,
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        992,
+        2208
+      ],
+      "id": "8c1de2f6-ffdd-4f59-a352-cef63e9da03a",
+      "name": "Chat",
+      "retryOnFail": false,
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        2432
+      ],
+      "id": "a947c892-6ed8-4074-af29-f11a5ddeec10",
+      "name": "Chat AI",
+      "credentials": {
+        "ollamaApi": {
+          "id": "bDtOUxewex411Q6i",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1792,
+        1584
+      ],
+      "id": "3f29f59b-d868-43d3-9e01-871fb295d0cf",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "robin_memory",
+          "mode": "list",
+          "cachedResultName": "robin_memory"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "memory_key": "={{ $json.output.match(/memory_key:\\s*(.+)/)[1].trim() }}",
+            "memory_value": "={{ $json.output.match(/memory_value:\\s*(.+)/)[1].trim() }}"
+          },
+          "matchingColumns": [
+            "memory_key"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "memory_key",
+              "displayName": "memory_key",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "memory_value",
+              "displayName": "memory_value",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1056,
+        960
+      ],
+      "id": "ab54b337-db50-4b9b-8a0d-9a9be2331792",
+      "name": "Save",
+      "notesInFlow": true,
+      "credentials": {
+        "postgres": {
+          "id": "88uzVFZBzuGfwNN5",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "robin_memory",
+          "mode": "list",
+          "cachedResultName": "robin_memory"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "memory_key",
+              "value": "={{ $json.output.match(/memory_key:\\s*(.+)/)[1].trim() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1056,
+        1360
+      ],
+      "id": "898063e1-eb3d-4425-8ee1-038013b7daed",
+      "name": "Recall",
+      "credentials": {
+        "postgres": {
+          "id": "88uzVFZBzuGfwNN5",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    memory_key,\n    memory_value\nFROM robin_memory\nORDER BY memory_key;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1056,
+        1600
+      ],
+      "id": "fd21e708-f33d-440a-830a-1559df421646",
+      "name": "Recall All",
+      "credentials": {
+        "postgres": {
+          "id": "88uzVFZBzuGfwNN5",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"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\",\n  \"query\": \"{{ $json.output.match(/USER_MESSAGE:\\s*([\\s\\S]*)/)?.[1]?.trim() }}\",\n  \"search_depth\": \"basic\",\n  \"max_results\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1056,
+        1920
+      ],
+      "id": "33606fb5-9b16-4a85-aee3-0a3b66b2f544",
+      "name": "Web Search",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are Robin Save Agent.\n\nInput format:\n\nACTION: SAVE_MEMORY\n\nUSER_MESSAGE: <user message>\n\nYour job:\n\n1. Read USER_MESSAGE.\n2. Extract a memory_key.\n3. Extract a memory_value.\n4. Return ONLY:\n\nmemory_key: <key>\nmemory_value: <value>\n\nRules:\n\nFavorite color:\n\n* \"i like black color\"\n* \"my favorite color is black\"\n* \"i love black\"\n\nOutput:\n\nmemory_key: favorite_color\nmemory_value: black\n\nFavorite bike:\n\n* \"my favorite bike is royal enfield classic 350\"\n\nOutput:\n\nmemory_key: favorite_bike\nmemory_value: Royal Enfield Classic 350\n\nFavorite drink:\n\n* \"i like coffee\"\n* \"i like to drink coffee\"\n* \"my favorite drink is cappuccino\"\n\nOutput:\n\nmemory_key: favorite_drink\nmemory_value: coffee\n\nDream job:\n\n* \"my dream job is cybersecurity analyst\"\n\nOutput:\n\nmemory_key: dream_job\nmemory_value: Cybersecurity Analyst\n\nEducation:\n\n* \"i study bca cybersecurity\"\n\nOutput:\n\nmemory_key: education\nmemory_value: BCA Cybersecurity\n\nMother:\n\n* \"my mother's name is shareena\"\n\nOutput:\n\nmemory_key: mother_name\nmemory_value: Shareena\n\nFather:\n\n* \"my father's name is abdul shameer\"\n\nOutput:\n\nmemory_key: father_name\nmemory_value: Abdul Shameer\n\nExamples:\n\nInput:\n\nACTION: SAVE_MEMORY\n\nUSER_MESSAGE: i like black color\n\nOutput:\n\nmemory_key: favorite_color\nmemory_value: black\n\n---\n\nInput:\n\nACTION: SAVE_MEMORY\n\nUSER_MESSAGE: i like to drink coffee\n\nOutput:\n\nmemory_key: favorite_drink\nmemory_value: coffee\n\n---\n\nInput:\n\nACTION: SAVE_MEMORY\n\nUSER_MESSAGE: my favorite bike is royal enfield classic 350\n\nOutput:\n\nmemory_key: favorite_bike\nmemory_value: Royal Enfield Classic 350\n\nReturn ONLY memory_key and memory_value.\nDo not chat.\nDo not explain.\nDo not answer the user.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        640,
+        848
+      ],
+      "id": "a9a663fa-6fcb-4b93-94bf-153330338caf",
+      "name": "Save agent"
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        720,
+        1072
+      ],
+      "id": "3113800f-ccc1-47d5-a0e9-082275ef5976",
+      "name": "Save Formater",
+      "credentials": {
+        "ollamaApi": {
+          "id": "bDtOUxewex411Q6i",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are Robin Recall Agent.\n\nInput format:\n\nACTION: RECALL_MEMORY\n\nUSER_MESSAGE: <user question>\n\nYour job:\n\n1. Determine which memory key the user is asking for.\n2. Return ONLY:\n\nmemory_key: <key>\n\nExamples:\n\nUSER_MESSAGE: what is my favorite color\n\nOutput:\n\nmemory_key: favorite_color\n\n---\n\nUSER_MESSAGE: what is my favorite bike\n\nOutput:\n\nmemory_key: favorite_bike\n\n---\n\nUSER_MESSAGE: what is my favorite drink\n\nOutput:\n\nmemory_key: favorite_drink\n\n---\n\nUSER_MESSAGE: what is my dream job\n\nOutput:\n\nmemory_key: dream_job\n\n---\n\nUSER_MESSAGE: what am i studying\n\nOutput:\n\nmemory_key: education\n\n---\n\nUSER_MESSAGE: what is my mother's name\n\nOutput:\n\nmemory_key: mother_name\n\n---\n\nUSER_MESSAGE: what is my father's name\n\nOutput:\n\nmemory_key: father_name\n\nRules:\n\n* Return ONLY memory_key.\n* No explanations.\n* No chatting.\n* No JSON.\n* No markdown.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        640,
+        1360
+      ],
+      "id": "9d872953-84f0-498d-a2c7-e7bd56e5ce23",
+      "name": "Recall Agent"
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        720,
+        1584
+      ],
+      "id": "cf7a3e04-fd18-46ef-bba8-72bed3b55a32",
+      "name": "Recall Formater",
+      "credentials": {
+        "ollamaApi": {
+          "id": "bDtOUxewex411Q6i",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6e44c5bf-d366-4536-b6da-82103fffc938",
+              "name": "User",
+              "value": "={{ $json.User }}",
+              "type": "string"
+            },
+            {
+              "id": "c058ea9e-154c-441d-8c03-5425980cae79",
+              "name": "ACTION",
+              "value": "={{ $json.Switch[0].output.match(/ACTION:\\s*([A-Z_]+)/)?.[1] }}",
+              "type": "string"
+            },
+            {
+              "id": "24f2a779-766f-4874-bef2-f6c563294c79",
+              "name": "Response",
+              "value": "={{ $json.data[0].Response }}",
+              "type": "string"
+            },
+            {
+              "id": "b6b45ec5-da72-4c76-b908-2fc8003cd2bf",
+              "name": "created_at",
+              "value": "={{ $json.data[0].created_at }}",
+              "type": "string"
+            },
+            {
+              "id": "50f6b374-7e30-43ec-bbd2-22f4e562752b",
+              "name": "Info",
+              "value": "={{\nObject.fromEntries(\n  $json.data[0].info.map(item => [\n    item.memory_key,\n    item.memory_value\n  ])\n)\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2016,
+        1600
+      ],
+      "id": "c8528f9d-6ddf-4cb5-8abd-af6e70c6f2eb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f92ff292-22fe-4fac-b1ca-e493acd89842",
+              "name": "Response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        2208
+      ],
+      "id": "29ec52ed-96f8-4093-b1e2-332b2d40dc30",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b635142e-0fc7-4292-8983-9fff115b10ef",
+              "name": "memory_value",
+              "value": "={{ $json.memory_value }}",
+              "type": "string"
+            },
+            {
+              "id": "2e0885cb-4c0c-4599-a87a-1588fe1ef1ea",
+              "name": "Response",
+              "value": "=saved",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        960
+      ],
+      "id": "92174b5b-c138-4f87-b824-1f36247032da",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2d9bb753-2853-41e4-8e76-02693f3c64fb",
+              "name": "Response",
+              "value": "={{ $json.memory_value }}",
+              "type": "string"
+            },
+            {
+              "id": "ab231228-c95f-4e70-b712-956a045d994b",
+              "name": "created_at",
+              "value": "={{ $json.created_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        1360
+      ],
+      "id": "99166c98-f4c8-4564-b661-03ad83cc2073",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1b6b879b-5989-49d9-8fd7-a1ab48467754",
+              "name": "Response",
+              "value": "={{ $json.results }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        1920
+      ],
+      "id": "c2760f64-0717-47c9-9050-641301915808",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "25779dac-c203-41c8-a812-751e60187477",
+              "name": "User",
+              "value": "={{ $json.body.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1568,
+        704
+      ],
+      "id": "1eae3470-0993-42f8-97aa-67c12a79e2ca",
+      "name": "Edit Fields6"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        1600
+      ],
+      "id": "ed2fb518-7953-4e10-b771-2d357f170808",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "Switch",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        1792
+      ],
+      "id": "cabb4f6b-9949-407e-a7c5-c66d8f65a456",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "info",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        1600
+      ],
+      "id": "54dc9c32-51d8-4a3b-9161-a81c21defaba",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ { reply: $json.reply } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2880,
+        1616
+      ],
+      "id": "39605443-700a-408c-a5dc-99c03c7b697d",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "robin",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        1360
+      ],
+      "id": "e6b02766-2462-4d91-b921-8ec1b66ed0e3",
+      "name": "Webhook",
+      "webhookId": "17149d04-7436-46f3-b0b3-5d9617edc23a"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.text }},{{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are Robin Router.\n\nYou are NOT Robin.\n\nYou do NOT answer users.\n\nYou do NOT chat.\n\nYou do NOT call tools.\n\nYour only job is to analyze the user's message and determine what action Robin should take.\n\nPossible actions:\n\nSAVE_MEMORY\nRECALL_MEMORY\nRECALL_ALL\nSEARCH\nCHAT\n\n--------------------------------------------------\n\nACTION RULES\n\nIf the user provides a new personal fact, preference, goal, favorite thing, education detail, family detail, project, or career aspiration:\n\nACTION: SAVE_MEMORY\n\nExamples:\n\n\"My favorite bike is Royal Enfield Classic 350\"\n\n\"My favorite drink is cappuccino\"\n\n\"My favorite food is biryani\"\n\n\"My dream job is Cybersecurity Analyst\"\n\n\"I study BCA Cybersecurity\"\n\n\"My father's name is Abdul Shameer\"\n\n\"My mother's name is Shareena\"\n\n--------------------------------------------------\n\nIf the user asks for a remembered fact:\n\nACTION: RECALL_MEMORY\n\nExamples:\n\n\"What is my favorite bike?\"\n\n\"What is my dream job?\"\n\n\"What is my favorite drink?\"\n\n\"What am I studying?\"\n\n\"What is my mother's name?\"\n\n--------------------------------------------------\n\nIf the user asks:\n\n\"What do you know about me?\"\n\n\"What do you remember about me?\"\n\n\"Tell me about me.\"\n\n\"Summarize my profile.\"\n\nACTION: RECALL_ALL\n\n--------------------------------------------------\n\nIf the user requests current information:\n\nACTION: SEARCH\n\nExamples:\n\n\"Latest cybersecurity news\"\n\n\"Today's weather\"\n\n\"Current stock price\"\n\n\"Recent OpenAI news\"\n\n--------------------------------------------------\n\nEverything else:\n\nACTION: CHAT\n\n--------------------------------------------------\n\nOUTPUT FORMAT\n\nAlways output exactly:\n\nACTION: <action>\n\nUSER_MESSAGE: <original user message>\n\n--------------------------------------------------\n\nExamples\n\nInput:\nMy dream job is Cybersecurity Analyst\n\nOutput:\n\nACTION: SAVE_MEMORY\n\nUSER_MESSAGE: My dream job is Cybersecurity Analyst\n\n--------------------------------------------------\n\nInput:\nWhat is my favorite bike?\n\nOutput:\n\nACTION: RECALL_MEMORY\n\nUSER_MESSAGE: What is my favorite bike?\n\n--------------------------------------------------\n\nInput:\nWhat do you know about me?\n\nOutput:\n\nACTION: RECALL_ALL\n\nUSER_MESSAGE: What do you know about me?\n\n--------------------------------------------------\n\nInput:\nLatest cybersecurity news\n\nOutput:\n\nACTION: SEARCH\n\nUSER_MESSAGE: Latest cybersecurity news\n\n--------------------------------------------------\n\nInput:\nExplain SQL Injection\n\nOutput:\n\nACTION: CHAT\n\nUSER_MESSAGE: Explain SQL Injection\n\n--------------------------------------------------\n\nNever output JSON.\n\nNever answer the user.\n\nNever explain your reasoning.\n\nNever call tools.\n\nOnly return ACTION and USER_MESSAGE."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        64,
+        1600
+      ],
+      "id": "2bca2bd0-07be-447f-b8a1-d105c253d490",
+      "name": "Robin Router"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21dae364-4edd-4100-ad0e-17cf95460451",
+              "name": "reply",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2704,
+        1616
+      ],
+      "id": "e8b56826-80ec-406e-a20c-7cea23c3d6c5",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -368,
+        1136
+      ],
+      "id": "cff36634-6bec-44f9-9522-0d192aec4223",
+      "name": "When chat message received",
+      "webhookId": "fc7e4254-c7cf-48d6-88d5-8426efb72e4c"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Refiner": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Robin Refiner",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Robin Router",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Save agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Recall Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Recall All",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Web Search",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Chat",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat AI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Chat",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recall": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recall All": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Search": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save agent": {
+      "main": [
+        [
+          {
+            "node": "Save",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Formater": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Save agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recall Agent": {
+      "main": [
+        [
+          {
+            "node": "Recall",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recall Formater": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recall Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Robin Refiner": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Robin Refiner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields6": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Robin Router": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Robin Router",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2bb4a206-393f-41ec-9b8a-6bfdd9577d0a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "55db649aa1165a74a7025202c82c296dc5fc2af970041f6c7a7b134f9bff0995"
+  },
+  "nodeGroups": [],
+  "id": "GBi9QYBAtgwD9WB5",
+  "tags": [
+    {
+      "updatedAt": "2026-06-12T13:57:08.279Z",
+      "createdAt": "2026-06-12T13:57:08.279Z",
+      "id": "4pHBuVDhF75QC0BG",
+      "name": "Robin"
+    },
+    {
+      "updatedAt": "2026-06-12T13:57:11.753Z",
+      "createdAt": "2026-06-12T13:57:11.753Z",
+      "id": "CuhuoYj1kaHkAKxO",
+      "name": "AI"
+    },
+    {
+      "updatedAt": "2026-06-12T13:57:16.697Z",
+      "createdAt": "2026-06-12T13:57:16.697Z",
+      "id": "eMoHcyNDezcy5o8U",
+      "name": "Automation"
+    }
+  ]
+}

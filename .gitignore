@@ -30,10 +30,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-# Environment files
+# Environment
 .env
 .env.local
 .env.production
+
+# Audio
+*.wav
+*.mp3
 
 # Python
 __pycache__/
@@ -42,12 +46,16 @@ __pycache__/
 # Node
 node_modules/
 
-# Logs
-*.log
+# Build
+dist/
+build/
+
+# VSCode
+.vscode/
 
 # Database
 *.db
+*.sqlite
 
-# OS files
-.DS_Store
-Thumbs.db
+# Logs
+*.log
