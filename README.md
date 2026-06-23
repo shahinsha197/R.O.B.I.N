@@ -1,108 +1,42 @@
-# 🤖 R.O.B.I.N
+# R.O.B.I.N (AI Voice Assistant)
 
-### Real-time Orb-Based Intelligent Network Assistant
+A personal AI voice assistant built with:
 
-ROBIN is a voice-controlled AI assistant featuring:
+* React + TanStack Router
+* n8n AI workflows
+* Faster-Whisper Speech-to-Text
+* ElevenLabs Text-to-Speech
+* WebSocket Bridge
+* Wake Word Detection
+* Animated Orb Interface
 
-* 🎙 Wake word detection ("Hey Robin")
-* 🧠 Long-term memory via n8n
-* 🌐 Web-enabled intelligence
-* 🔊 ElevenLabs voice synthesis
-* ✨ Animated Orb UI
-* 🔗 WebSocket bridge between Python and React
-* 🎤 Speech-to-Text using Faster-Whisper
-* ⚡ Local-first architecture
+Robin can be activated using voice commands, process requests through n8n, remember user information, and respond using natural speech.
 
 ---
 
 # Features
 
-### Voice Activation
-
-Say:
-
-```text
-Hey Robin
-Hello Robin
-Hi Robin
-```
-
-ROBIN automatically activates and starts listening.
-
----
-
-### Conversational Mode
-
-```text
-Hey Robin
-↓
-Orb starts listening
-↓
-User speaks
-↓
-n8n processes request
-↓
-Robin replies
-↓
-Continues conversation
-↓
-5 seconds silence
-↓
-Returns to sleep mode
-```
-
----
-
-### Memory System
-
-ROBIN stores and recalls:
-
-* User information
-* Preferences
-* Previous conversations
-* Long-term memory
-
-Powered by n8n workflows.
-
----
-
-# Architecture
-
-```text
-Wake Listener (Python)
-        ↓
-WebSocket Bridge
-        ↓
-React Orb UI
-        ↓
-Speech To Text
-        ↓
-n8n Workflow
-        ↓
-Memory / Tools / Agents
-        ↓
-Response
-        ↓
-ElevenLabs TTS
-```
+* Wake Word Activation ("Hey Robin")
+* Voice Conversations
+* ElevenLabs Natural Voice
+* n8n AI Agent Backend
+* Long-Term Memory Support
+* Animated Orb UI
+* WebSocket Communication
+* Faster-Whisper Speech Recognition
+* Extensible Multi-Agent Architecture
 
 ---
 
 # Requirements
 
-## Python
+## Software
 
-* Python 3.11+
-* pip
-
-## Node.js
-
+* Python 3.12+ (recommended)
 * Node.js 20+
 * npm
-
-## n8n
-
-* Latest version
+* n8n
+* Git
 
 ---
 
@@ -111,31 +45,17 @@ ElevenLabs TTS
 ## 1. Clone Repository
 
 ```bash
-git clone https://github.com/shahinsha197/R.O.B.I.N.git
+git clone https://github.com/YOUR_USERNAME/R.O.B.I.N.git
 
 cd R.O.B.I.N
 ```
 
 ---
 
-## 2. Create Environment File
+## 2. Install Frontend Dependencies
 
-Create:
-
-```text
-.env
-```
-
-Example:
-
-```env
-ELEVENLABS_API_KEY=YOUR_API_KEY
-
-ELEVENLABS_VOICE_ID_PRIMARY=VOICE_ID
-
-ELEVENLABS_VOICE_ID_SECONDARY=VOICE_ID
-
-N8N_URL=http://localhost:5678/webhook/robin
+```bash
+npm install
 ```
 
 ---
@@ -143,6 +63,7 @@ N8N_URL=http://localhost:5678/webhook/robin
 ## 3. Install Python Dependencies
 
 ```bash
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
@@ -153,22 +74,60 @@ pip install faster-whisper
 pip install sounddevice
 pip install scipy
 pip install requests
-pip install websockets
 pip install python-dotenv
 pip install elevenlabs
+pip install websockets
 ```
 
 ---
 
-## 4. Install Frontend Dependencies
+# Environment Variables
 
-```bash
-npm install
+Create a file named:
+
+```text
+.env
+```
+
+Copy contents from:
+
+```text
+.env.example
+```
+
+Example:
+
+```env
+ELEVENLABS_API_KEY=YOUR_KEY
+
+ELEVENLABS_VOICE_ID_PRIMARY=VOICE_ID
+ELEVENLABS_VOICE_ID_SECONDARY=VOICE_ID
+
+N8N_URL=http://localhost:5678/webhook/robin
 ```
 
 ---
 
-# n8n Setup
+# Setting Up ElevenLabs
+
+1. Create an account on ElevenLabs.
+2. Generate an API Key.
+3. Select a voice.
+4. Copy the Voice ID.
+5. Add them to `.env`.
+
+Example:
+
+```env
+ELEVENLABS_API_KEY=xxxxxxxx
+
+ELEVENLABS_VOICE_ID_PRIMARY=xxxxxxxx
+ELEVENLABS_VOICE_ID_SECONDARY=xxxxxxxx
+```
+
+---
+
+# Setting Up n8n
 
 ## Install n8n
 
@@ -176,13 +135,13 @@ npm install
 npm install -g n8n
 ```
 
-Start:
+Start n8n:
 
 ```bash
-n8n
+n8n start
 ```
 
-Default URL:
+Open:
 
 ```text
 http://localhost:5678
@@ -190,158 +149,193 @@ http://localhost:5678
 
 ---
 
-## Create Webhook
+# Importing Robin Workflow
 
-Create a workflow:
-
-```text
-Webhook
-↓
-AI Agent
-↓
-Respond to Webhook
-```
-
-Webhook path:
+The repository includes:
 
 ```text
-/robin
+Robin N8N.json
 ```
 
-Final webhook URL:
+To import:
+
+1. Open n8n.
+2. Click "Import from File".
+3. Select:
+
+```text
+Robin N8N.json
+```
+
+4. Save workflow.
+5. Activate workflow.
+
+---
+
+# Configure n8n Webhook
+
+Open the imported workflow.
+
+Locate the Webhook node.
+
+Ensure the webhook path is:
+
+```text
+robin
+```
+
+The final URL should be:
 
 ```text
 http://localhost:5678/webhook/robin
 ```
 
----
+Update your `.env`:
 
-## Expected Input
-
-```json
-{
-  "text": "What is my name?"
-}
+```env
+N8N_URL=http://localhost:5678/webhook/robin
 ```
 
 ---
 
-## Expected Output
+# Starting Robin
 
-```json
-{
-  "reply": "Your name is Shahinsha."
-}
-```
-
----
-
-# Running Robin
-
-## Terminal 1
-
-Start bridge server:
+## Terminal 1 - WebSocket Bridge
 
 ```bash
 python bridge_server.py
 ```
 
+Expected:
+
+```text
+Bridge Ready
+```
+
 ---
 
-## Terminal 2
-
-Start frontend:
+## Terminal 2 - Frontend
 
 ```bash
 npm run dev
 ```
 
+Expected:
+
+```text
+Local: http://localhost:8080
+```
+
+Open the URL in your browser.
+
 ---
 
-## Terminal 3
-
-Start wake listener:
+## Terminal 3 - Wake Listener
 
 ```bash
 python robin_wake_listener.py
 ```
 
----
+Expected:
 
-# Optional Single Command Startup
+```text
+Loading Whisper Tiny...
 
-Create:
-
-```bash
-python start_robin.py
+Wake Listener Ready
 ```
 
-This launches:
-
-* Bridge Server
-* React UI
-* Wake Listener
-
-Automatically.
-
 ---
 
-# Wake Words
+# Using Robin
 
-Supported:
+Say:
 
 ```text
 Hey Robin
-Hello Robin
-Hi Robin
 ```
+
+Robin will:
+
+1. Detect wake word.
+2. Activate the orb.
+3. Start listening.
+4. Send requests through n8n.
+5. Generate a response.
+6. Speak using ElevenLabs.
+
+Robin automatically returns to sleep after several seconds of silence.
 
 ---
 
-# Sleep Commands
-
-Supported:
+# Project Structure
 
 ```text
-Bye Robin
-Goodbye Robin
-Sleep Robin
-Stop Listening
-Go To Sleep
+R.O.B.I.N
+│
+├── src/
+├── public/
+│
+├── bridge_server.py
+├── robin_wake_listener.py
+├── start_robin.py
+│
+├── .env.example
+├── requirements.txt
+├── package.json
+│
+├── robin_workflow.json
+│
+└── README.md
 ```
 
 ---
 
-# Security
+# Security Notes
 
-Never commit:
+Never upload:
 
 ```text
 .env
 .env.local
-API Keys
-Voice IDs
-Database Credentials
 ```
 
-Use:
+Never expose:
+
+```text
+ELEVENLABS_API_KEY
+VOICE IDS
+DATABASE PASSWORDS
+API TOKENS
+```
+
+Only upload:
 
 ```text
 .env.example
 ```
 
-instead.
+---
+
+# Future Roadmap
+
+* Multi-Agent Architecture
+* Better Memory System
+* Desktop Application
+* Smart Home Integration
+* Local LLM Support
+* Calendar & Email Integration
+* Plugin System
+* Vision Support
+* Autonomous Task Execution
 
 ---
 
-# Roadmap
+# License
 
-* Better memory architecture
-* Multi-agent n8n workflows
-* Local LLM support
-* Desktop app
-* Windows startup service
-* Smart home integration
-* Vision support
-* Mobile companion app
+MIT License
 
+Created by Shahinsha CK
+R.O.B.I.N - AI Voice Assistant
+
+```
+```
